@@ -1,0 +1,7 @@
+Fri Nov 17 23:37:30 CET 2017
+
+instalace
+=========
+- vytvořit nové virtuální prostředí
+- updatovat pip
+- až potom funguje příkaz z README z tensort2tensor

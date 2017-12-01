@@ -1,0 +1,182 @@
+usage: t2t-bleu [-h] [--timit_paths TIMIT_PATHS] [--parsing_path PARSING_PATH]
+                [--registry_help [REGISTRY_HELP]] [--noregistry_help]
+                [--tfdbg [TFDBG]] [--notfdbg]
+                [--export_saved_model [EXPORT_SAVED_MODEL]]
+                [--noexport_saved_model] [--dbgprofile [DBGPROFILE]]
+                [--nodbgprofile] [--model MODEL] [--hparams_set HPARAMS_SET]
+                [--hparams_range HPARAMS_RANGE] [--hparams HPARAMS]
+                [--problems PROBLEMS] [--data_dir DATA_DIR]
+                [--train_steps TRAIN_STEPS]
+                [--eval_early_stopping_metric EVAL_EARLY_STOPPING_METRIC]
+                [--eval_early_stopping_steps EVAL_EARLY_STOPPING_STEPS]
+                [--eval_early_stopping_metric_minimize [EVAL_EARLY_STOPPING_METRIC_MINIMIZE]]
+                [--noeval_early_stopping_metric_minimize]
+                [--eval_run_autoregressive [EVAL_RUN_AUTOREGRESSIVE]]
+                [--noeval_run_autoregressive]
+                [--eval_use_test_set [EVAL_USE_TEST_SET]]
+                [--noeval_use_test_set]
+                [--keep_checkpoint_max KEEP_CHECKPOINT_MAX]
+                [--experimental_optimize_placement [EXPERIMENTAL_OPTIMIZE_PLACEMENT]]
+                [--noexperimental_optimize_placement]
+                [--keep_checkpoint_every_n_hours KEEP_CHECKPOINT_EVERY_N_HOURS]
+                [--save_checkpoints_secs SAVE_CHECKPOINTS_SECS]
+                [--log_device_placement [LOG_DEVICE_PLACEMENT]]
+                [--nolog_device_placement]
+                [--local_eval_frequency LOCAL_EVAL_FREQUENCY]
+                [--locally_shard_to_cpu [LOCALLY_SHARD_TO_CPU]]
+                [--nolocally_shard_to_cpu]
+                [--daisy_chain_variables [DAISY_CHAIN_VARIABLES]]
+                [--nodaisy_chain_variables] [--sync [SYNC]] [--nosync]
+                [--worker_job WORKER_JOB] [--worker_gpu WORKER_GPU]
+                [--worker_replicas WORKER_REPLICAS] [--worker_id WORKER_ID]
+                [--worker_gpu_memory_fraction WORKER_GPU_MEMORY_FRACTION]
+                [--ps_gpu PS_GPU] [--gpu_order GPU_ORDER] [--ps_job PS_JOB]
+                [--ps_replicas PS_REPLICAS] [--decode_hparams DECODE_HPARAMS]
+                [--bleu_variant BLEU_VARIANT] [--model_dir MODEL_DIR]
+                [--translation TRANSLATION] [--source SOURCE]
+                [--reference REFERENCE] [--translations_dir TRANSLATIONS_DIR]
+                [--event_subdir EVENT_SUBDIR] [--tag_suffix TAG_SUFFIX]
+                [--min_steps MIN_STEPS] [--wait_secs WAIT_SECS]
+                [--report_zero [REPORT_ZERO]] [--noreport_zero]
+                [--decode_shards DECODE_SHARDS] [--t2t_usr_dir T2T_USR_DIR]
+                [--master MASTER] [--schedule SCHEDULE]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --timit_paths TIMIT_PATHS
+                        Comma-separated list of tarfiles containing TIMIT
+                        datasets
+  --parsing_path PARSING_PATH
+                        Path to parsing files in tmp_dir.
+  --registry_help [REGISTRY_HELP]
+                        If True, logs the contents of the registry and exits.
+  --noregistry_help
+  --tfdbg [TFDBG]       If True, use the TF debugger CLI on train/eval.
+  --notfdbg
+  --export_saved_model [EXPORT_SAVED_MODEL]
+                        Whether to export a SavedModel for serving.
+  --noexport_saved_model
+  --dbgprofile [DBGPROFILE]
+                        If True, record the timeline for chrome://tracing/.
+  --nodbgprofile
+  --model MODEL         Which model to use.
+  --hparams_set HPARAMS_SET
+                        Which parameters to use.
+  --hparams_range HPARAMS_RANGE
+                        Parameters range.
+  --hparams HPARAMS     A comma-separated list of `name=value` hyperparameter
+                        values. This flag is used to override hyperparameter
+                        settings either when manually selecting
+                        hyperparameters or when using Vizier. If a
+                        hyperparameter setting is specified by this flag then
+                        it must be a valid hyperparameter name for the model.
+  --problems PROBLEMS   Dash separated list of problems to solve.
+  --data_dir DATA_DIR   Directory with training data.
+  --train_steps TRAIN_STEPS
+                        The number of steps to run training for.
+  --eval_early_stopping_metric EVAL_EARLY_STOPPING_METRIC
+                        If --schedule=train_and_evaluate and
+                        --eval_early_stopping_steps is not None, then stop
+                        when --eval_early_stopping_metric has not decreased
+                        for --eval_early_stopping_steps
+  --eval_early_stopping_steps EVAL_EARLY_STOPPING_STEPS
+                        If --schedule=train_and_evaluate and
+                        --eval_early_stopping_steps is not None, then stop
+                        when --eval_early_stopping_metric has not decreased
+                        for --eval_early_stopping_steps
+  --eval_early_stopping_metric_minimize [EVAL_EARLY_STOPPING_METRIC_MINIMIZE]
+                        Whether to check for the early stopping metric going
+                        down or up.
+  --noeval_early_stopping_metric_minimize
+  --eval_run_autoregressive [EVAL_RUN_AUTOREGRESSIVE]
+                        Run eval autoregressively where we condition on
+                        previousgenerated output instead of the actual target.
+  --noeval_run_autoregressive
+  --eval_use_test_set [EVAL_USE_TEST_SET]
+                        Whether to use the '-test' data for EVAL (and
+                        PREDICT).
+  --noeval_use_test_set
+  --keep_checkpoint_max KEEP_CHECKPOINT_MAX
+                        How many recent checkpoints to keep.
+  --experimental_optimize_placement [EXPERIMENTAL_OPTIMIZE_PLACEMENT]
+                        Optimize ops placement with experimental session
+                        options.
+  --noexperimental_optimize_placement
+  --keep_checkpoint_every_n_hours KEEP_CHECKPOINT_EVERY_N_HOURS
+                        Number of hours between each checkpoint to be saved.
+                        The default value 10,000 hours effectively disables
+                        it.
+  --save_checkpoints_secs SAVE_CHECKPOINTS_SECS
+                        Save checkpoints every this many seconds. Default=0
+                        means let tensorflow.contrib.learn.python.learn
+                        decide, which is currently set to 600 = 10 minutes.
+  --log_device_placement [LOG_DEVICE_PLACEMENT]
+                        Whether to log device placement.
+  --nolog_device_placement
+  --local_eval_frequency LOCAL_EVAL_FREQUENCY
+                        Run evaluation every this steps during local training.
+  --locally_shard_to_cpu [LOCALLY_SHARD_TO_CPU]
+                        Use CPU as a sharding device running locally. This
+                        allows to test sharded model construction on a machine
+                        with 1 GPU.
+  --nolocally_shard_to_cpu
+  --daisy_chain_variables [DAISY_CHAIN_VARIABLES]
+                        copy variables around in a daisy chain
+  --nodaisy_chain_variables
+  --sync [SYNC]         Sync compute on PS.
+  --nosync
+  --worker_job WORKER_JOB
+                        name of worker job
+  --worker_gpu WORKER_GPU
+                        How many GPUs to use.
+  --worker_replicas WORKER_REPLICAS
+                        How many workers to use.
+  --worker_id WORKER_ID
+                        Which worker task are we.
+  --worker_gpu_memory_fraction WORKER_GPU_MEMORY_FRACTION
+                        Fraction of GPU memory to allocate.
+  --ps_gpu PS_GPU       How many GPUs to use per ps.
+  --gpu_order GPU_ORDER
+                        Optional order for daisy-chaining gpus. e.g. "1 3 2 4"
+  --ps_job PS_JOB       name of ps job
+  --ps_replicas PS_REPLICAS
+                        How many ps replicas.
+  --decode_hparams DECODE_HPARAMS
+                        Comma-separated list of name=value pairs to control
+                        decode behavior. See decoding.decode_hparams for
+                        defaults.
+  --bleu_variant BLEU_VARIANT
+                        Possible values: cased(case-sensitive), uncased,
+                        both(default).
+  --model_dir MODEL_DIR
+                        Directory to load model checkpoints from.
+  --translation TRANSLATION
+                        Path to the MT system translation file
+  --source SOURCE       Path to the source-language file to be translated
+  --reference REFERENCE
+                        Path to the reference translation file
+  --translations_dir TRANSLATIONS_DIR
+                        Where to store the translated files
+  --event_subdir EVENT_SUBDIR
+                        Where in model_dir to store the event file
+  --tag_suffix TAG_SUFFIX
+                        What to add to BLEU_cased and BLEU_uncased tags.
+                        Default=''.
+  --min_steps MIN_STEPS
+                        Don't evaluate checkpoints with less steps.
+  --wait_secs WAIT_SECS
+                        Wait upto N seconds for a new checkpoint, cf.
+                        save_checkpoints_secs.
+  --report_zero [REPORT_ZERO]
+                        Store BLEU=0 and guess its time based on flags.txt
+  --noreport_zero
+  --decode_shards DECODE_SHARDS
+                        Number of decoding replicas.
+  --t2t_usr_dir T2T_USR_DIR
+                        Path to a Python module that will be imported. The
+                        __init__.py file should include the necessary imports.
+                        The imported files should contain registrations, e.g.
+                        @registry.register_model calls, that will then be
+                        available to the t2t-decoder.
+  --master MASTER       Address of TensorFlow master.
+  --schedule SCHEDULE   Must be train_and_evaluate for decoding.
