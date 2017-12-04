@@ -2,8 +2,8 @@
 
 
 qsub_launch() {
-	echo qsubmit -jobname=$2 -gpus=1 -gpumem=11G \"./gen-train-dec.sh $1\"
-	./gen-train-dec.sh $1 $3 $4
+	echo qsubmit -jobname=$2 -gpus=1 -gpumem=11G \"./gen-train-dec.sh $1 $3 $4 $5\"
+#	./gen-train-dec.sh $1 $3 $4 $5
 }
 
 #export PROBLEM=translate_decs_subwords
@@ -50,9 +50,38 @@ translate_decs_bpe bpe test.de.bpe50k  test.cs.bpe50k
 translate_decs_bpezz bpezz zz.test.de.bpe  zz.test.cs.bpe
 translate_decs_bpeaa bpeaa aa.test.de.bpe  aa.test.cs.bpe"
 
+# 5. vlna
+# Fri Dec  1 13:47:49 CET 2017
+JOBS="translate_encs_subwords encssubw test.en-cs.en.tok test.en-cs.cs.tok
+translate_encs_bpe encsbpe test.en-cs.en.bpe50k test.en-cs.cs.bpe50k"
 
-echo "$JOBS" | while read prob name src tgt; do
-	qsub_launch $prob $name $src $tgt
+JOBS="translate_decs_bpe bpe-2 test.de.bpe50k  test.cs.bpe50k -2
+translate_decs_bpeaa bpeaa-2 aa.test.de.bpe  aa.test.cs.bpe -2"
+
+# opraveno
+JOBS="translate_encs_bpe encsbpe test.en-cs.en.bpe50k test.en-cs.cs.bpe50k"
+
+# 6. vlna
+# Mon Dec  4 14:24:59 CET 2017
+# oprava save_checkpoints_secs
+
+JOBS="translate_encs_bpe encsbpe test.en-cs.en.bpe50k test.en-cs.cs.bpe50k
+translate_decs_subwords subw test.de.tok  test.cs.tok
+translate_decs_bpezz bpezz zz.test.de.bpe  zz.test.cs.bpe
+translate_decs_bpe bpe-2 test.de.bpe50k  test.cs.bpe50k -2
+translate_decs_bpeaa bpeaa-2 aa.test.de.bpe  aa.test.cs.bpe -2
+translate_encs_subwords encssubw test.en-cs.en.tok test.en-cs.cs.tok"
+
+JOBS="translate_decs_subwords subw test.de.tok  test.cs.tok"
+#translate_encs_bpe encsbpe test.en-cs.en.bpe50k test.en-cs.cs.bpe50k"
+
+
+
+
+
+
+echo "$JOBS" | while read prob name src tgt iter; do
+	qsub_launch $prob $name $src $tgt $iter
 done
 
 

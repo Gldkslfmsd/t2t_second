@@ -23,22 +23,14 @@ import logging
 #logging.basicConfig(format='%(asctime)-15s [%(levelname)7s] %(funcName)s - %(message)s', level=logging.DEBUG)
 
 
-class TranslateDecsBase(translate.TranslateProblem):
+class TranslateBase(translate.TranslateProblem):
 	@property
 	def is_character_level(self):
 		return False
 
 	@property
-	def num_shards(self):
-		return 1
-
-	@property
 	def use_subword_tokenizer(self):
 		return False
-
-	@property
-	def vocab_name(self):
-		return "vocab.decs"
 
 	@property
 	def targeted_vocab_size(self):
@@ -48,14 +40,6 @@ class TranslateDecsBase(translate.TranslateProblem):
 	def vocab_file(self):
 		return self.vocab_name
 	
-	@property
-	def input_space_id(self):
-		return problem.SpaceID.DE_TOK
-
-	@property
-	def target_space_id(self):
-		return problem.SpaceID.CS_TOK
-
 	# TODO: přesunout do otce
 	def postprocess(self, text):
 		return text
@@ -64,9 +48,48 @@ class TranslateDecsBase(translate.TranslateProblem):
 	def needs_postprocessing(self):
 		return False
 
+class TranslateDecsBase(TranslateBase):
+	SRC_LANG = "de"
+	TGT_LANG = "cs"
+
+	@property
+	def vocab_name(self):
+		return "vocab.decs"
+
+	@property
+	def num_shards(self):
+		return 1
+
+	@property
+	def input_space_id(self):
+		return problem.SpaceID.DE_TOK
+
+	@property
+	def target_space_id(self):
+		return problem.SpaceID.CS_TOK
 
 
-class TranslateDecsOwnvocab(TranslateDecsBase):
+class TranslateEncsBase(TranslateBase):
+	SRC_LANG = "en"
+	TGT_LANG = "cs"
+
+	@property
+	def vocab_name(self):
+		return "vocab.encs"
+
+	@property
+	def num_shards(self):
+		return 10
+
+	@property
+	def input_space_id(self):
+		return problem.SpaceID.EN_TOK
+
+	@property
+	def target_space_id(self):
+		return problem.SpaceID.CS_TOK
+
+class TranslateOwnvocab(TranslateBase):
 
 	@property
 	def needs_postprocessing(self):
@@ -109,17 +132,23 @@ class TranslateDecsOwnvocab(TranslateDecsBase):
 		vocab_path = os.path.join(tmp_dir, self.vocab_name)
 		print(vocab_path)
 		vocab_data_path = os.path.join(data_dir, self.vocab_name)
-		corp_path_cs = os.path.join(tmp_dir, self.corpus_lang(train, "cs"))
-		corp_path_de = os.path.join(tmp_dir, self.corpus_lang(train, "de"))
+		corp_path_tgt = os.path.join(tmp_dir, self.corpus_lang(train, self.TGT_LANG))
+		corp_path_src = os.path.join(tmp_dir, self.corpus_lang(train, self.SRC_LANG))
 		if train:
 			# create vocab here
-			self._create_vocab([corp_path_cs, corp_path_de], 
+			self._create_vocab([corp_path_tgt, corp_path_src], 
 					   vocab_path)
 			tf.gfile.Copy(vocab_path, vocab_data_path, overwrite=True)
 			self._add_unk_to_vocab(vocab_data_path)  # Add UNK to the vocab.
 		token_vocab = text_encoder.TokenTextEncoder(vocab_data_path, replace_oov=UNK)
 		# opraveno
-		return translate.token_generator(corp_path_de, corp_path_cs, token_vocab, EOS)
+		return translate.token_generator(corp_path_src, corp_path_tgt, token_vocab, EOS)
+
+class TranslateDecsOwnvocab(TranslateDecsBase, TranslateOwnvocab):
+	pass
+
+class TranslateEncsOwnvocab(TranslateEncsBase, TranslateOwnvocab):
+	pass
 
 class TranslateDecsAazzBase(TranslateDecsOwnvocab):
 	def corpus_lang(self, train, lang=None):
@@ -232,14 +261,8 @@ def generate_vocab(data_dir, tmp_dir, vocab_filename, vocab_size,
 						yield line
 	return generator_utils.get_or_generate_vocab_inner(data_dir, vocab_filename, vocab_size,
 						 generate())
-@registry.register_problem
-class TranslateSrctgtMy(TranslateDecsBase):
-	def abc(self):
-		print("abc")
 
-
-@registry.register_problem
-class TranslateDecsSubwords(TranslateDecsBase):
+class TranslateSubwords(TranslateBase):
 	@property
 	def use_subword_tokenizer(self):
 		return True
@@ -250,10 +273,11 @@ class TranslateDecsSubwords(TranslateDecsBase):
 #		encoder = text_encoder.TokenTextEncoder(vocab_filename, replace_oov=None)
 #		return {"inputs": encoder, "targets": encoder}
 
+	def corpus(self, train):
+		return "train.%s.tok" if train else "dev.%s.tok"
 
 	def generator(self, data_dir, tmp_dir, train):
-
-		corpus = ("train.%s.tok" if train else "dev.%s.tok")
+		corpus = self.corpus(train)
 		corpus_path = os.path.join(tmp_dir, corpus)
 		print(corpus_path)
 		vocab_path = os.path.join(tmp_dir, self.vocab_name)
@@ -263,6 +287,28 @@ class TranslateDecsSubwords(TranslateDecsBase):
 
 		symbolizer_vocab = generate_vocab(
 		        data_dir, tmp_dir, self.vocab_file, self.targeted_vocab_size,
-        		[corpus % "de", corpus % "cs"])
-		return translate.token_generator(corpus_path % "de", corpus_path % "cs", symbolizer_vocab, EOS)
+        		[corpus % self.SRC_LANG, corpus % self.TGT_LANG])
+		return translate.token_generator(corpus_path % self.SRC_LANG, corpus_path % self.TGT_LANG, symbolizer_vocab, EOS)
+
+@registry.register_problem
+class TranslateDecsSubwords(TranslateDecsBase, TranslateSubwords):
+	pass
+
+######################################################
+
+@registry.register_problem
+class TranslateEncsBpe(TranslateEncsBase, TranslateOwnvocab):
+	def corpus(self, train):
+		return "train.en-cs.%s.bpe50k" if train else "dev.en-cs.%s.bpe50k"
+	def postprocess(self, text):
+		return re.sub("@@ ","",text)
+
+
+
+@registry.register_problem
+class TranslateEncsSubwords(TranslateEncsBase, TranslateSubwords):
+	def corpus(self, train):
+		return "train.en-cs.%s.tok" if train else "dev.en-cs.%s.tok"
+
+
 

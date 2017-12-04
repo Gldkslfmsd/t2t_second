@@ -4,6 +4,7 @@
 export PROBLEM=$1
 export SRC_TEST=$2
 export TGT_TEST=$3
+export TRAIN_ITER=$4
 
 echo solving problem $PROBLEM
 
@@ -14,7 +15,7 @@ export HPARAMS=transformer_big_single_gpu
 export DIR=$PWD
 export DATA_DIR=$DIR/t2t_data/$PROBLEM/data_dir
 export TMP_DIR=$DIR/t2t_source_data
-export TRAIN_DIR=$DIR/t2t_data/$PROBLEM/train_dir/$MODEL-$HPARAMS
+export TRAIN_DIR=$DIR/t2t_data/$PROBLEM/train_dir/$MODEL-$HPARAMS$TRAIN_ITER
 
 
 mkdir -p $DATA_DIR $TMP_DIR $TRAIN_DIR
@@ -45,10 +46,13 @@ if [ ! -e $DATA_DIR/test.de ] || [ ! -e $DATA_DIR/test.cs ]; then
 	ln -rs $TMP_DIR/$TGT_TEST $DATA_DIR/test.cs
 fi
 
-#exit
-
 echo training...
 
+if [ -z "$TRAIN_ITER" ]; then
+	WM_STEPS=30000
+else
+	WM_STEPS=60000
+fi
 
 # Train
 # *  If you run out of memory, add --hparams='batch_size=1024'.
@@ -60,10 +64,11 @@ t2t-trainer \
 	--output_dir=$TRAIN_DIR \
 	--t2t_usr_dir=t2t_usr \
 	--train_steps=1000000 \
-	--hparams='batch_size=1500,learning_rate_warmup_steps=30000' \ #,shared_embeddings_and_softmax_wights=0
+	--hparams='batch_size=1500,learning_rate_warmup_steps='$WM_STEPS \
 	--save_checkpoints_secs=3600 \
 	--keep_checkpoint_max=32 \
 	--eval_steps=68 
+ #,shared_embeddings_and_softmax_wights=0
 ## protože 250k ne vždy stačí a zabít to můžu kdykoli
 #	--train_steps=1000000 \
 #	--hparams='batch_size=1500' \ # protože když tam nechám vyšší hodnotu, tak mi to spadne na OOM.
