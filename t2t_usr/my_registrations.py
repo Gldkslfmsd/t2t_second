@@ -165,7 +165,20 @@ class TranslateDecsAazzBase(TranslateDecsOwnvocab):
 	def postprocess(self, text):
 		return re.sub("\$ \$","",text)
 
+class TranslateDecsZzaaBase(TranslateDecsOwnvocab):
+	def corpus_lang(self, train, lang=None):
+		if train:
+			p = "train"
+		else:
+			p = "dev"
+		if lang == "de":
+			z = "zz"
+		else:
+			z = "aa"
+		return "%s.%s.%s.%s" % (z, p, lang, self.SPLIT)
 
+	def postprocess(self, text):
+		return re.sub(" @@ ","",text)
 
 @registry.register_problem
 class TranslateDecsBpezz(TranslateDecsOwnvocab):
@@ -181,6 +194,26 @@ class TranslateDecsBpe50k(TranslateDecsOwnvocab):
 	
 	def postprocess(self, text):
 		return re.sub("@@ ","",text)
+
+@registry.register_problem
+class TranslateDecsBpe50kaader(TranslateDecsOwnvocab):
+	def corpus_lang(self, train, lang):
+		if lang == "de":
+			return "aa.train.de.bpe" if train else "aa.train.de.bpe"
+		return "train.cs.der+bpe54k" if train else "dev.cs.der+bpe54k"
+	
+	def postprocess(self, text):
+		return re.sub("@@ ","",text)
+
+@registry.register_problem
+class TranslateDecsBpe50kaaderzz(TranslateDecsOwnvocab):
+	def corpus_lang(self, train, lang):
+		if lang == "de":
+			return "aa.train.de.bpe" if train else "aa.train.de.bpe"
+		return "zz.train.cs.der+bpe37k" if train else "zz.dev.cs.der+bpe37k"
+	
+	def postprocess(self, text):
+		return re.sub("\$ \$","",text)
 
 @registry.register_problem
 class TranslateDecsBpe(TranslateDecsBpe50k):
@@ -217,52 +250,16 @@ class TranslateDecsAazzpmorf(TranslateDecsAazzBase):
 class TranslateDecsBpeaazz(TranslateDecsAazzBase):
 	SPLIT = "bpe"	
 
+@registry.register_problem
+class TranslateDecsBpezzaa(TranslateDecsZzaaBase):
+	SPLIT = "bpe"	
 
-def generate_vocab(data_dir, tmp_dir, vocab_filename, vocab_size,
-                          sources):
-	"""Generate a vocabulary from the datasets in sources."""
-	def generate():
-		tf.logging.info("Generating vocab from: %s", str(sources))
-		for lang_file in sources:
-			tf.logging.info("Reading file: %s" % lang_file)
-			filepath = os.path.join(tmp_dir, lang_file)
-	#
-	#		# Extract from tar if needed.
-	#		if not tf.gfile.Exists(filepath):
-	#			read_type = "r:gz" if filename.endswith("tgz") else "r"
-	#			with tarfile.open(compressed_file, read_type) as corpus_tar:
-	#				corpus_tar.extractall(tmp_dir)
-	#
-	#		# For some datasets a second extraction is necessary.
-	#		if lang_file.endswith(".gz"):
-	#			new_filepath = os.path.join(tmp_dir, lang_file[:-3])
-	#			if tf.gfile.Exists(new_filepath):
-	#				tf.logging.info(
-	#			"Subdirectory %s already exists, skipping unpacking" % filepath)
-	#			else:
-	#				tf.logging.info("Unpacking subdirectory %s" % filepath)
-	#				gunzip_file(filepath, new_filepath)
-	#			filepath = new_filepath
-
-        # Use Tokenizer to count the word occurrences.
-			with tf.gfile.GFile(filepath, mode="r") as source_file:
-				file_byte_budget = 1e6
-				counter = 0
-				countermax = int(source_file.size() / file_byte_budget / 2)
-				for line in source_file:
-					if counter < countermax:
-						counter += 1
-					else:
-						if file_byte_budget <= 0:
-							break
-						line = line.strip()
-						file_byte_budget -= len(line)
-						counter = 0
-						yield line
-	return generator_utils.get_or_generate_vocab_inner(data_dir, vocab_filename, vocab_size,
-						 generate())
+@registry.register_problem
+class TranslateDecsDeraazz(TranslateDecsAazzBase):
+	SPLIT = "bpe"	
 
 class TranslateSubwords(TranslateBase):
+
 	@property
 	def use_subword_tokenizer(self):
 		return True
@@ -273,26 +270,97 @@ class TranslateSubwords(TranslateBase):
 #		encoder = text_encoder.TokenTextEncoder(vocab_filename, replace_oov=None)
 #		return {"inputs": encoder, "targets": encoder}
 
+	@property
+	def file_byte_budget(self):
+		return 1e6
+
+	def generate_vocab(self, data_dir, tmp_dir, vocab_filename, vocab_size,
+				  sources):
+		"""Generate a vocabulary from the datasets in sources."""
+		def generate():
+			tf.logging.info("Generating vocab from: %s", str(sources))
+			for lang_file in sources:
+				tf.logging.info("Reading file: %s" % lang_file)
+				filepath = os.path.join(tmp_dir, lang_file)
+		#
+		#		# Extract from tar if needed.
+		#		if not tf.gfile.Exists(filepath):
+		#			read_type = "r:gz" if filename.endswith("tgz") else "r"
+		#			with tarfile.open(compressed_file, read_type) as corpus_tar:
+		#				corpus_tar.extractall(tmp_dir)
+		#
+		#		# For some datasets a second extraction is necessary.
+		#		if lang_file.endswith(".gz"):
+		#			new_filepath = os.path.join(tmp_dir, lang_file[:-3])
+		#			if tf.gfile.Exists(new_filepath):
+		#				tf.logging.info(
+		#			"Subdirectory %s already exists, skipping unpacking" % filepath)
+		#			else:
+		#				tf.logging.info("Unpacking subdirectory %s" % filepath)
+		#				gunzip_file(filepath, new_filepath)
+		#			filepath = new_filepath
+
+		# Use Tokenizer to count the word occurrences.
+				with tf.gfile.GFile(filepath, mode="r") as source_file:
+					file_byte_budget = self.file_byte_budget
+					counter = 0
+					countermax = int(source_file.size() / file_byte_budget / 2)
+					for line in source_file:
+						if counter < countermax:
+							counter += 1
+						else:
+							if file_byte_budget <= 0:
+								break
+							line = line.strip()
+							file_byte_budget -= len(line)
+							counter = 0
+							yield line
+		return generator_utils.get_or_generate_vocab_inner(data_dir, vocab_filename, vocab_size,
+							 generate())
+
+
 	def corpus(self, train):
 		return "train.%s.tok" if train else "dev.%s.tok"
 
 	def generator(self, data_dir, tmp_dir, train):
 		corpus = self.corpus(train)
 		corpus_path = os.path.join(tmp_dir, corpus)
-		print(corpus_path)
 		vocab_path = os.path.join(tmp_dir, self.vocab_name)
 		print(vocab_path)
 
 		vocab_data_path = os.path.join(data_dir, self.vocab_name)
 
-		symbolizer_vocab = generate_vocab(
-		        data_dir, tmp_dir, self.vocab_file, self.targeted_vocab_size,
-        		[corpus % self.SRC_LANG, corpus % self.TGT_LANG])
-		return translate.token_generator(corpus_path % self.SRC_LANG, corpus_path % self.TGT_LANG, symbolizer_vocab, EOS)
+		corpus_src = os.path.join(tmp_dir, self.corpus_lang(train, self.SRC_LANG))
+		corpus_tgt = os.path.join(tmp_dir, self.corpus_lang(train, self.TGT_LANG))
+		corpus_path_src = self.corpus_lang(tmp_dir, corpus_src)
+		corpus_path_tgt = self.corpus_lang(tmp_dir, corpus_tgt)
 
-@registry.register_problem
+		symbolizer_vocab = self.generate_vocab(
+		        data_dir, tmp_dir, self.vocab_file, self.targeted_vocab_size,
+        		[self.corpus_lang(train, self.SRC_LANG), self.corpus_lang(train, self.TGT_LANG)])
+		return translate.token_generator(corpus_path_src, corpus_path_tgt, symbolizer_vocab, EOS)
+
+
 class TranslateDecsSubwords(TranslateDecsBase, TranslateSubwords):
 	pass
+
+@registry.register_problem
+class TranslateDecsSubwords50k(TranslateDecsSubwords):
+	pass
+
+@registry.register_problem
+class TranslateDecsSubwords100k(TranslateDecsSubwords):
+	@property
+	def file_byte_budget(self):
+		return 10e6	
+
+@registry.register_problem
+class TranslateDecsSubwords100kFbb100m(TranslateDecsSubwords):
+	@property
+	def file_byte_budget(self):
+		return 100e6	
+
+
 
 ######################################################
 
@@ -305,10 +373,47 @@ class TranslateEncsBpe(TranslateEncsBase, TranslateOwnvocab):
 
 
 
-@registry.register_problem
 class TranslateEncsSubwords(TranslateEncsBase, TranslateSubwords):
 	def corpus(self, train):
 		return "train.en-cs.%s.tok" if train else "dev.en-cs.%s.tok"
 
+@registry.register_problem
+class TranslateEncsSubwords50k(TranslateEncsSubwords):
+	pass
 
+@registry.register_problem
+class TranslateEncsSubwords100k(TranslateEncsSubwords):
+	@property
+	def file_byte_budget(self):
+		return 10e6	
+
+@registry.register_problem
+class TranslateEncsSubwords100kFbb100m(TranslateEncsSubwords):
+	@property
+	def file_byte_budget(self):
+		return 100e6	
+
+@registry.register_problem
+class TranslateEncsSubwords97kFbb100m(TranslateEncsSubwords):
+	@property
+	def targeted_vocab_size(self):
+		return 97000
+
+	@property
+	def file_byte_budget(self):
+		return 100e6	
+
+
+
+@registry.register_problem
+class TranslateEncsSubwords100kFbb1000m(TranslateEncsSubwords):
+	@property
+	def file_byte_budget(self):
+		return 1000e6	
+
+
+
+if __name__ == "__main__":
+	t = TranslateEncsSubwords100k()
+	print(t.file_byte_budget)
 

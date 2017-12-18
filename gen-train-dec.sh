@@ -22,7 +22,11 @@ mkdir -p $DATA_DIR $TMP_DIR $TRAIN_DIR
 
 ./link_data.sh
 
-source p3-t2t-gpu-fork/bin/activate
+if [ "$TRAIN_ITER" == "gen_only" ]; then
+	source p3-t2t-cpu/bin/activate
+else
+	source p3-t2t-gpu-fork/bin/activate
+fi
 
 GEN_STAMP=$DATA_DIR/is_generated
 # Generate data
@@ -44,6 +48,11 @@ if [ ! -e $DATA_DIR/test.de ] || [ ! -e $DATA_DIR/test.cs ]; then
 #	rm -f $DATA_DIR/test.de $DATA_DIR/test.cs
 	ln -rs $TMP_DIR/$SRC_TEST $DATA_DIR/test.de
 	ln -rs $TMP_DIR/$TGT_TEST $DATA_DIR/test.cs
+fi
+
+if [ "$TRAIN_ITER" == "gen_only" ]; then
+	echo only generating, exitting
+	exit
 fi
 
 echo training...
