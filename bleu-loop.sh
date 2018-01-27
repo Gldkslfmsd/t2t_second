@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ ! -z "$1" ]; then
-	echo qsubmit -jobname=bleu-loop "$0"
+	echo qsubmit -jobname=bleu-loop "\"./$0\""
 	exit
 fi
 
@@ -58,9 +58,36 @@ translate_decs_bpe50kaader
 translate_decs_bpe50kaaderzz -2
 translate_decs_bpe50kaader -2"
 
+# TODO: jen ty, co fakt existují
+
+JOBS="translate_decs_tmorfsub_tmorfsub
+translate_decs_tmorfsub_dersub
+translate_decs_sub_dersub 
+translate_decs_sub_tmorfsub 
+translate_decs_tmorfsub_sub
+translate_decs_tmorfsub_tmorfsub -2
+translate_decs_tmorfsub_dersub -2
+translate_decs_sub_dersub -2
+translate_decs_sub_tmorfsub -2
+translate_decs_tmorfsub_sub -2
+translate_decs_subwords100k_fbb100m
+translate_decs_subwords100k_fbb100m -2
+translate_decs_bpe50kaaderzz
+translate_decs_bpe50kaader
+translate_decs_bpe50kaaderzz -2
+translate_decs_bpe50kaader -2"
 
 
 
+JOBS="translate_decs_tmorfsub_tmorfsub
+translate_decs_tmorfsub_sub
+translate_decs_sub_dersub
+translate_decs_tmorfsub_dersub
+translate_decs_sub_tmorfsub 
+translate_encs_sub_dersub"
+
+
+JOBS="`cat running_jobs`"
 
 
 # exits with return code 0 (that means TRUE in bash), if file $1 is newer than $2 minutes
@@ -83,7 +110,7 @@ while true; do
 	#echo `date` iteration $i >> $LOG
 	#echo `date` q-submitting job >> $LOG
 	# hodně jobů
-	echo "$JOBS" | while read problem iter rest; do
+	cat running_jobs | while read problem iter rest; do
 		running=$STAMP_DIR/stamp-$problem""$iter"".running
 		finished=$STAMP_DIR/stamp-$problem""$iter"".finished
 		if [ ! -f "$running" ] && ! is_newer_than $finished 60; then
@@ -100,7 +127,17 @@ while true; do
 	done | bash
 	#echo `date` skipping job q-submitting >> $LOG
 	sleep 10
-done
+done &
+
+while true; do
+	./refix-bleus.sh 
+	./refix-bleus.sh | bash
+	./bleu-detok.sh
+	./bleu-detok.sh | bash
+	sleep 1800
+done &
+
+wait
 
 
 		# všechno postupně v jednom jobu

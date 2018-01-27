@@ -2,8 +2,8 @@
 
 
 qsub_launch() {
-#	echo qsubmit -jobname=$2 -gpus=1 -gpumem=11G \"./gen-train-dec.sh $1 $3 $4 $5\"
-	./gen-train-dec.sh $1 $3 $4 $5
+	echo qsubmit -jobname=$2 -gpus=1 -gpumem=11G \"./gen-train-dec.sh $1 $3 $4 $5\"
+#	./gen-train-dec.sh $1 $3 $4 $5
 }
 
 qsub_launch12() {
@@ -136,9 +136,131 @@ translate_decs_bpe50kaader de-der-t aa.test.de.bpe50k  test.cs.der+bpe54k"
 #translate_decs_bpe50kaaderzz de-derzz-t2 aa.test.de.tok  zz.test.cs.tok -2
 #translate_decs_bpe50kaader de-der-t2 aa.test.de.tok  test.cs.tok -2"
 
+# Mon Dec 18 16:57:39 CET 2017
+# tmorf+subwords, der+subwords
+JOBS="translate_decs_tmorfsub_dersub tms-ders-g test.de.tmorf test.cs.der gen_only
+translate_decs_tmorfsub_tmorfsub tms-tms-g test.de.tmorf test.cs.tmorf gen_only"
 
+
+JOBS="translate_decs_tmorfsub_tmorfsub tms-tms-g test.de.tmorf test.cs.tmorf 
+translate_decs_tmorfsub_dersub tms-ders-g test.de.tmorf test.cs.der 
+translate_decs_sub_dersub d-sd-g test.de.tok test.cs.der 
+translate_decs_sub_tmorfsub d-st-g test.de.tok test.cs.tmorf 
+translate_decs_tmorfsub_sub d-ts-g test.de.tmorf test.cs.tok"
+
+JOBS="translate_encs_sub_dersub e-sd-g test.en.tok test.cs.der"
+
+# znovu spouštím ty, co spadly
+
+JOBS="translate_decs_tmorfsub_tmorfsub d-tt-t test.de.tmorf test.cs.tmorf
+translate_decs_tmorfsub_sub d-ts-g test.de.tmorf test.cs.tok
+translate_encs_sub_dersub e-sd-g test.en.tok test.cs.der"
+
+# po uvolnění místa
+
+JOBS="translate_encs_sub_dersub e-sd-g test.en.tok test.cs.der
+translate_decs_tmorfsub_sub d-ts-g test.de.tmorf test.cs.tok"
+
+JOBS="translate_decs_tmorfsub_tmorfsub d-tt-t test.de.tmorf test.cs.tmorf"
+
+
+# 
+JOBS="translate_encs_sub_dersub e-sd-g test.en.tok test.cs.der
+translate_decs_sub_tmorfsub d-st-g test.de.tok test.cs.tmorf"
+
+
+# Sat Dec 23 16:40:01 CET 2017
+# spočítal jsem detok
+
+JOBS="translate_decs_bpe50kaaderzz de-derzz-t aa.test.de.bpe50k  zz.test.cs.der+bpe37k
+translate_decs_bpe50kaader de-der-t aa.test.de.bpe50k  test.cs.der+bpe54k
+translate_decs_tmorfsub_sub d-ts-g test.de.tmorf test.cs.tok -2
+translate_decs_sub_dersub d-sd-g test.de.tok test.cs.der"
+
+JOBS="translate_encs_sub_dersub e-sd-g test.en.tok test.cs.der"
+
+#JOBS="translate_decs_tmorfsub_sub d-ts-g test.de.tmorf test.cs.tok -2"
+
+#JOBS="translate_decs_tmorfsub_tmorfsub d-tt-t test.de.tmorf test.cs.tmorf"
+
+#JOBS="translate_decs_bpe_und bpe_und test.de.bpe_und50k test.cs.bpe_und50k"
+JOBS="translate_decs_bpe_und bpe_und_gen test.de.und_bpe50k test.cs.und_bpe50k"
+
+JOBS="translate_decs_bpe_und bpe_und2 test.de.und_bpe50k test.cs.und_bpe50k -2"
+
+JOBS="translate_decs_bpe_shrd bpe_shrd test.de.shrd_bpe100k test.cs.shrd_bpe100k
+translate_decs_bpe_shrd_und bpe_s_und test.de.shrd_und_bpe100k test.cs.shrd_und_bpe100k"
+
+JOBS="translate_decs_bpe_und bpe_und2 test.de.und_bpe50k test.cs.und_bpe50k -2"
+
+JOBS="translate_decs_bpe_shrd bpe_shrd2 test.de.shrd_bpe100k test.cs.shrd_bpe100k -2"
+
+JOBS="translate_decs_bpe_shrd_und bpe_s_un2 test.de.shrd_und_bpe100k test.cs.shrd_und_bpe100k -2"
+#translate_decs_bpe_shrd_und bpe_s_und test.de.shrd_und_bpe100k test.cs.shrd_und_bpe100k"
+
+JOBS="translate_decs_sub_dersub_fix gen-sds-fix test.de.tok test.cs.der-fix"
+
+# doplňuju bpe def zz
+
+JOBS="translate_decs_bpedefzz bpedefzz test.de.tok zz.test.cs.bpe"
+
+JOBS="translate_decs_bpeaadef bpeaadef aa.test.de.bpe test.cs.bpe50k"
+
+JOBS="translate_decs_sub_tmorfsub_fix gen-sts-fix test.de.tok test.cs.tmorf-fix
+translate_decs_tmorfsub_sub_fix gen-tss-fix test.de.tmorf-fix test.cs.tok"
+
+JOBS="translate_decs_bpeaadef bpeaadef2 aa.test.de.bpe test.cs.bpe50k -2"
+JOBS="translate_decs_bpedefzz bpedefzz test.de.tok zz.test.cs.bpe -2"
+
+JOBS="translate_decs_tmorfsub_tmorfsub_fix tsts-fix test.de.tmorf-fix test.cs.tmorf-fix
+translate_decs_tmorfsub_dersub_fix tsds-fix test.de.tmorf-fix test.cs.der-fix"
+
+JOBS="translate_decs_tmorfsub_sub_fix tss-fix2 test.de.tmorf-fix test.cs.tok -2
+translate_decs_bpeaadef bpeaadef aa.test.de.bpe test.cs.bpe50k
+translate_decs_sub_tmorfsub_fix gen-sts-fix test.de.tok test.cs.tmorf-fix
+translate_decs_tmorfsub_sub_fix gen-tss-fix test.de.tmorf-fix test.cs.tok
+translate_decs_bpeaadef bpeaadef2 aa.test.de.bpe test.cs.bpe50k -2"
+
+JOBS="translate_decs_bpe_und_endfix  bpeundendfix test.de.und_bpe_endfix50k test.cs.und_bpe_endfix50k
+translate_decs_bpe_und_endfix  b2peundendfix test.de.und_bpe_endfix50k test.cs.und_bpe_endfix50k -2"
+
+
+JOBS="translate_decs_bpe_und_endfix  bpeundendfix test.de.und_bpe_endfix50k test.cs.und_bpe_endfix50k
+translate_decs_bpe_und_endfix  b2peundendfix test.de.und_bpe_endfix50k test.cs.und_bpe_endfix50k -2"
+
+
+JOBS="translate_decs_bpe_shrd_und_endfix shrdundef test.de.shrd_und_bpe_endfix100k test.cs.shrd_und_bpe_endfix100k"
+
+JOBS="translate_decs_bpe_und_endfix  bpeundendfix test.de.und_bpe_endfix50k test.cs.und_bpe_endfix50k"
+
+JOBS="translate_decs_bpe_und_endfix  b2peundendfix test.de.und_bpe_endfix50k test.cs.und_bpe_endfix50k -2"
+
+JOBS="translate_decs_bpe_shrd_und_endfix s2hrdundef test.de.shrd_und_bpe_endfix100k test.cs.shrd_und_bpe_endfix100k -2"
+
+JOBS="translate_decs_bpe_und_endfix  b2peundendfix test.de.und_bpe_endfix50k test.cs.und_bpe_endfix50k -2"
+
+JOBS="translate_decs_bpe_shrd_und_endfix s2hrdundef test.de.shrd_und_bpe_endfix100k test.cs.shrd_und_bpe_endfix100k -2"
+
+JOBS="translate_decs_bpe_shrd_und_again shrdundag test.de.shrd_und_bpe100k test.cs.shrd_und_bpe100k
+translate_decs_bpe_und_again undagain test.de.shrd_und_bpe100k test.cs.shrd_und_bpe100k"
+
+JOBS="translate_decs_bpe_shrd_und_again sh2rdundag test.de.shrd_und_bpe100k test.cs.shrd_und_bpe100k -2
+translate_decs_bpe_und_again un2dagain test.de.shrd_und_bpe100k test.cs.shrd_und_bpe100k -2"
+
+JOBS="translate_decs_bpe_shrd_und_again shrdundag test.de.shrd_und_bpe100k test.cs.shrd_und_bpe100k"
+
+JOBS="translate_decs_bpe_shrd_und_again sh2rdundag test.de.shrd_und_bpe100k test.cs.shrd_und_bpe100k -2"
+
+#: > running_jobs
 echo "$JOBS" | while read prob name src tgt iter; do
-	qsub_launch $prob $name $src $tgt $iter
+	if echo $iter | grep 'gen_only' >/dev/null; then
+		qsub_launch_cpu $prob $name $src $tgt $iter
+	else
+		echo $prob $iter >> running_jobs
+		sort -u running_jobs > tmp
+		mv tmp running_jobs
+		qsub_launch $prob $name $src $tgt $iter
+	fi
 done
 
 

@@ -188,6 +188,35 @@ class TranslateDecsBpezz(TranslateDecsOwnvocab):
 		return re.sub("\$ \$","",text)
 
 @registry.register_problem
+class TranslateDecsBpedefzz(TranslateDecsOwnvocab):
+	def corpus_lang(self, train, lang):
+		if lang == "de":
+			return "train.de.bpe50k" if train else "dev.de.bpe50k"
+		return "zz.train.cs.bpe" if train else "zz.dev.cs.bpe"
+
+	def postprocess(self, text):
+		return re.sub("\$ \$","",text)
+
+@registry.register_problem
+class TranslateDecsBpedefzzFix(TranslateDecsBpedefzz):
+	pass
+
+@registry.register_problem
+class TranslateDecsBpeaadef(TranslateDecsOwnvocab):
+	def corpus_lang(self, train, lang):
+		if lang == "de":
+			return "aa.train.de.bpe" if train else "aa.dev.de.bpe"
+		return "train.cs.bpe50k" if train else "dev.cs.bpe50k"
+
+	def postprocess(self, text):
+		return re.sub("@@ ","",text)
+	
+
+@registry.register_problem
+class TranslateDecsBpeaadefFix(TranslateDecsBpeaadef):
+	pass
+
+@registry.register_problem
 class TranslateDecsBpe50k(TranslateDecsOwnvocab):
 	def corpus(self, train):
 		return "train.%s.bpe50k" if train else "dev.%s.bpe50k"
@@ -196,9 +225,39 @@ class TranslateDecsBpe50k(TranslateDecsOwnvocab):
 		return re.sub("@@ ","",text)
 
 @registry.register_problem
+class TranslateDecsBpeShrd(TranslateDecsBpe50k):
+	def corpus(self, train):
+		return "train.%s.shrd_bpe100k" if train else "dev.%s.shrd_bpe100k"
+	def postprocess(self, text):
+		return re.sub("_ ", " ", re.sub("@@ ","",text))
+
+@registry.register_problem
+class TranslateDecsBpeShrdUnd(TranslateDecsBpe50k):
+	def corpus(self, train):
+		return "train.%s.shrd_und_bpe100k" if train else "dev.%s.shrd_und_bpe100k"
+	def postprocess(self, text):
+		return re.sub("_ ", " ", re.sub("@@ ","",text))
+
+@registry.register_problem
+class TranslateDecsBpeShrdUndAgain(TranslateDecsBpeShrdUnd):
+	pass
+
+
+
+@registry.register_problem
+class TranslateDecsBpeShrdUndEndfix(TranslateDecsBpe50k):
+	def corpus(self, train):
+		return "train.%s.shrd_und_bpe_endfix100k" if train else "dev.%s.shrd_und_bpe_endfix100k"
+	def postprocess(self, text):
+		text = re.sub("_", "", re.sub("@@ ","",text))
+		text = re.sub("&und;", "_", text)
+		return text
+
+@registry.register_problem
 class TranslateDecsBpe50kaader(TranslateDecsOwnvocab):
 	def corpus_lang(self, train, lang):
 		if lang == "de":
+			# TODO: dev místo train!!!!
 			return "aa.train.de.bpe" if train else "aa.train.de.bpe"
 		return "train.cs.der+bpe54k" if train else "dev.cs.der+bpe54k"
 	
@@ -209,11 +268,54 @@ class TranslateDecsBpe50kaader(TranslateDecsOwnvocab):
 class TranslateDecsBpe50kaaderzz(TranslateDecsOwnvocab):
 	def corpus_lang(self, train, lang):
 		if lang == "de":
+			# TODO: dev místo train!!!!
 			return "aa.train.de.bpe" if train else "aa.train.de.bpe"
 		return "zz.train.cs.der+bpe37k" if train else "zz.dev.cs.der+bpe37k"
 	
 	def postprocess(self, text):
 		return re.sub("\$ \$","",text)
+
+@registry.register_problem
+class TranslateDecsBpeUnd(TranslateDecsOwnvocab):
+	def corpus_lang(self, train, lang):
+		if lang == "de":
+			return "train.de.und_bpe50k" if train else "dev.de.und_bpe50k"
+		return "train.cs.und_bpe50k" if train else "dev.cs.und_bpe50k"
+	
+	def postprocess(self, text):
+		return re.sub("_ ", " ", re.sub("@@ ","",text))
+
+@registry.register_problem
+class TranslateDecsBpeUndAgain(TranslateDecsBpeUnd):
+	pass
+
+
+# 
+@registry.register_problem
+class TranslateDecsBpeUndEndfix(TranslateDecsBpeUnd):
+	def corpus_lang(self, train, lang):
+		if lang == "de":
+			return "train.de.und_bpe_endfix50k" if train else "dev.de.und_bpe_endfix50k"
+		return "train.cs.und_bpe_endfix50k" if train else "dev.cs.und_bpe_endfix50k"
+	def postprocess(self, text):
+		text = re.sub("_", "", re.sub("@@ ","",text))
+		text = re.sub("&und;", "_", text)
+		return text
+
+
+
+
+@registry.register_problem
+class TranslateDecsBpeUndShrd(TranslateDecsOwnvocab):
+	def corpus_lang(self, train, lang):
+		if lang == "de":
+			return "train.de.und_bpe50k" if train else "dev.de.und_bpe50k"
+		return "train.cs.und_bpe50k" if train else "dev.cs.und_bpe50k"
+	
+	def postprocess(self, text):
+		return re.sub("_ ", " ", re.sub("@@ ","",text))
+
+
 
 @registry.register_problem
 class TranslateDecsBpe(TranslateDecsBpe50k):
@@ -322,9 +424,11 @@ class TranslateSubwords(TranslateBase):
 	def corpus(self, train):
 		return "train.%s.tok" if train else "dev.%s.tok"
 
+	def corpus_lang(self, train, lang):
+		return self.corpus(train) % lang
+
 	def generator(self, data_dir, tmp_dir, train):
-		corpus = self.corpus(train)
-		corpus_path = os.path.join(tmp_dir, corpus)
+		print("jsme v subwords generatoru.....")
 		vocab_path = os.path.join(tmp_dir, self.vocab_name)
 		print(vocab_path)
 
@@ -332,13 +436,11 @@ class TranslateSubwords(TranslateBase):
 
 		corpus_src = os.path.join(tmp_dir, self.corpus_lang(train, self.SRC_LANG))
 		corpus_tgt = os.path.join(tmp_dir, self.corpus_lang(train, self.TGT_LANG))
-		corpus_path_src = self.corpus_lang(tmp_dir, corpus_src)
-		corpus_path_tgt = self.corpus_lang(tmp_dir, corpus_tgt)
 
 		symbolizer_vocab = self.generate_vocab(
 		        data_dir, tmp_dir, self.vocab_file, self.targeted_vocab_size,
         		[self.corpus_lang(train, self.SRC_LANG), self.corpus_lang(train, self.TGT_LANG)])
-		return translate.token_generator(corpus_path_src, corpus_path_tgt, symbolizer_vocab, EOS)
+		return translate.token_generator(corpus_src, corpus_tgt, symbolizer_vocab, EOS)
 
 
 class TranslateDecsSubwords(TranslateDecsBase, TranslateSubwords):
@@ -371,6 +473,10 @@ class TranslateEncsBpe(TranslateEncsBase, TranslateOwnvocab):
 	def postprocess(self, text):
 		return re.sub("@@ ","",text)
 
+# TODO: vymazat
+@registry.register_problem
+class Prob(TranslateEncsBpe):
+	pass
 
 
 class TranslateEncsSubwords(TranslateEncsBase, TranslateSubwords):
@@ -414,6 +520,10 @@ class TranslateEncsSubwords100kFbb1000m(TranslateEncsSubwords):
 
 
 if __name__ == "__main__":
-	t = TranslateEncsSubwords100k()
-	print(t.file_byte_budget)
+#	t = TranslateEncsSubwords100k()
+#	print(t.file_byte_budget)
 
+	t = TranslateDecsBpeUndEndfix()
+
+	v = "Pro_ další_ informace_ o_ novém_ postupu_ při_ žádosti_ o_ vízum_ na@@ vš@@ tiv@@ te_ následující_ web@@ ovou_ stránku_ h@@ tt@@ p_ :_ /_ /_ mexi@@ co@@ .@@ us@@ em@@ bas@@ sy@@ .@@ g@@ ov_ /_ bole@@ ti@@ nes_ /_ sp@@ 10@@ 1@@ 20@@ 1_ &und;_ Vi@@ s@@ as@@ -@@ FA@@ Q@@ s.@@ h@@ t@@ m@@ l_"
+	print(t.postprocess(v))
