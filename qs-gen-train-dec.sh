@@ -251,6 +251,16 @@ JOBS="translate_decs_bpe_shrd_und_again shrdundag test.de.shrd_und_bpe100k test.
 
 JOBS="translate_decs_bpe_shrd_und_again sh2rdundag test.de.shrd_und_bpe100k test.cs.shrd_und_bpe100k -2"
 
+JOBS="translate_decs_bpe_shrd_und_again2 shrdundag2 test.de.shrd_und_bpe100k test.cs.shrd_und_bpe100k"
+
+JOBS="translate_decs_bpe_shrd_und_again2 shrdundag2 test.de.shrd_und_bpe100k test.cs.shrd_und_bpe100k -2"
+
+JOBS="translate_decs_bpe_shrd_und_again2 shrdundag2 test.de.shrd_und_bpe100k test.cs.shrd_und_bpe100k -2"
+
+JOBS="translate_encs_bpe_shrd_und test.en-cs.en.shrd_und_bpe100k test.en-cs.cs.shrd_und_bpe100k"
+
+
+
 #: > running_jobs
 echo "$JOBS" | while read prob name src tgt iter; do
 	if echo $iter | grep 'gen_only' >/dev/null; then
@@ -259,7 +269,7 @@ echo "$JOBS" | while read prob name src tgt iter; do
 		echo $prob $iter >> running_jobs
 		sort -u running_jobs > tmp
 		mv tmp running_jobs
-		qsub_launch $prob $name $src $tgt $iter
+		qsub_launch12 $prob $name $src $tgt $iter
 	fi
 done
 

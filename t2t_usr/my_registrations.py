@@ -242,6 +242,13 @@ class TranslateDecsBpeShrdUnd(TranslateDecsBpe50k):
 class TranslateDecsBpeShrdUndAgain(TranslateDecsBpeShrdUnd):
 	pass
 
+@registry.register_problem
+class TranslateDecsBpeShrdUndAgain2(TranslateDecsBpeShrdUnd):
+	pass
+
+@registry.register_problem
+class TranslateDecsBpeShrdUndAgaintwo(TranslateDecsBpeShrdUndAgain2):
+	pass
 
 
 @registry.register_problem
@@ -516,6 +523,15 @@ class TranslateEncsSubwords100kFbb1000m(TranslateEncsSubwords):
 	@property
 	def file_byte_budget(self):
 		return 1000e6	
+
+
+@registry.register_problem
+class TranslateEncsBpeShrdUnd(TranslateEncsBpe):
+	def corpus(self, train):
+		return "train.en-cs.%s.shrd_und_bpe100k" if train else "dev.en-cs.%s.shrd_und_bpe100k"
+	def postprocess(self, text):
+		return re.sub("_ ", " ", re.sub("@@ ","",text))
+
 
 
 
